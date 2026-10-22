@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parivartan 2.0 — Particle Experience</title>
+
+<style>
+:root {
+  --bg: #05060d;
+  --panel: rgba(13, 16, 31, .88);
+  --border: rgba(255,255,255,.12);
+  --text: #f4f6ff;
+  --muted: #9ba3c7;
+  --cyan: #63e8ff;
+  --purple: #b76bff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+#scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.panel {
+  position: fixed;
+  z-index: 5;
+  top: 18px;
+  left: 68px;
+  width: min(330px, calc(100vw - 82px));
+  transition: transform .25s ease, opacity .25s ease;
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  padding: 19px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--panel);
+  backdrop-filter: blur(22px);
+  box-shadow: 0 18px 70px #0008;
+  scrollbar-width: thin;
+}
+
+.panel.is-hidden {
+  transform: translateX(calc(-100% - 82px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+#panelToggle {
+  position: fixed;
+  z-index: 10;
+  top: 18px;
+  left: 18px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(13, 16, 31, .94);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 8px 30px #0006;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 4px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  color: #05060d;
+  font-size: 23px;
+  font-weight: 900;
+  background: linear-gradient(135deg,var(--cyan),var(--purple));
+}
+
+h1 {
+  font-size: 19px;
+  margin: 0;
+  letter-spacing: -.5px;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 20px 0 11px;
+  color: #c8cce8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.pill {
+  padding: 4px 7px;
+  border-radius: 30px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  color: var(--muted);
+  background: #ffffff0c;
+  border: 1px solid var(--border);
+}
+
+.pill.on {
+  color: var(--cyan);
+  border-color: #63e8ff55;
+}
+
+button, select {
+  color: var(--text);
+  background: #ffffff0b;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 11px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+button:hover {
+  border-color: #63e8ff99;
+  background: #63e8ff12;
+}
+
+button.active {
+  color: var(--cyan);
+  border-color: #63e8ff88;
+  background: #63e8ff14;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+select {
+  width: 100%;
+  outline: none;
+}
+
+select option {
+  background: #111426;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 7px;
+}
+
+.shape-btn {
+  padding: 10px 5px;
+  font-size: 11px;
+}
+
+.control {
+  margin: 13px 0;
+}
+
+.control-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+  color: #c9cde4;
+  font-size: 11px;
+}
+
+output {
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+input[type=range] {
+  width: 100%;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
+.divider {
+  height: 1px;
+  margin-top: 17px;
+  background: var(--border);
+}
+
+.hint {
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.meter {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #ffffff12;
+  margin-top: 10px;
+}
+
+#audioMeter, #musicMeter {
+  width: 0%;
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(90deg,#63e8ff,#b76bff,#ff6bba);
+  box-shadow: 0 0 15px #b76bff;
+  transition: width .06s linear;
+}
+
+#cameraPreview {
+  display: none;
+  width: 100%;
+  max-height: 130px;
+  object-fit: cover;
+  transform: scaleX(-1);
+  border-radius: 10px;
+  margin-top: 10px;
+  background: #000;
+}
+
+.statusline {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 11px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b718b;
+}
+
+.dot.live {
+  background: #65f4b0;
+  box-shadow: 0 0 10px #65f4b0;
+}
+
+#topStatus {
+  position: fixed;
+  z-index: 3;
+  top: 20px;
+  right: 20px;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  background: #080b18a8;
+  backdrop-filter: blur(12px);
+  color: #dce5ff;
+  font-size: 11px;
+}
+
+#bottomHint {
+  position: fixed;
+  bottom: 19px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 25px);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  background: #080b18b8;
+  color: #aab2d3;
+  font-size: 11px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+#bottomHint strong {
+  color: #e5eaff;
+}
+
+#cameraVideo {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .panel {
+    top: 10px;
+    left: 58px;
+    width: min(290px, calc(100vw - 68px));
+    padding: 14px;
+    max-height: calc(100vh - 75px);
+  }
+
+  #panelToggle {
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .panel.is-hidden {
+    transform: translateX(calc(-100% - 68px));
+  }
+
+  #topStatus {
+    top: 10px;
+    right: 10px;
+    font-size: 9px;
+    padding: 7px 9px;
+  }
+
+  #bottomHint {
+    bottom: 8px;
+    font-size: 9px;
+  }
+
+  .section-title {
+    margin-top: 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="scene"></canvas>
+
+<audio id="songPlayerA" preload="auto"></audio>
+<audio id="songPlayerB" preload="auto"></audio>
+
+<button id="panelToggle" type="button" aria-label="Open controls panel" aria-expanded="false" title="Open controls">☰</button>
+
+<div class="panel is-hidden" id="controlPanel">
+
+  <div class="brand">
+    <div class="logo">P</div>
+    <div>
+      <h1>Parivartan 2.0</h1>
+      <div class="subtitle">Interactive Particle Universe</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span>PARTICLE SHAPES</span>
+    <span class="pill" id="shapePill">SPHERE</span>
+  </div>
+
+  <div class="grid3">
+    <button class="shape-btn active" data-shape="Sphere">◉ Sphere</button>
+    <button class="shape-btn" data-shape="Heart">♥ Heart</button>
+    <button class="shape-btn" data-shape="Galaxy">✳ Galaxy</button>
+    <button class="shape-btn" data-shape="Butterfly">❋ Butterfly</button>
+    <button class="shape-btn" data-shape="Spiral">◎ Spiral</button>
+    <button class="shape-btn" data-shape="Saturn">◉ Saturn</button>
+  </div>
+
+  <div class="section-title">
+    <span>PARTICLE CONTROLS</span>
+  </div>
+
+  <div class="control">
+    <label class="control-label" for="speed">
+      <span>Particle speed</span>
+      <output id="speedValue">1.0×</output>
+    </label>
+    <input id="speed" type="range" min="0.1" max="3" step="0.1" value="1">
+  </div>
+
+  <div class="control">
+    <label class="control-label" for="particleSize">
+      <span>Particle size</span>
+      <output id="sizeValue">1.0×</output>
+    </label>
+    <input id="particleSize" type="range" min="0.4" max="2.5" step="0.1" value="1">
+  </div>
+
+  <div class="control">
+    <label class="control-label" for="rotationSpeed">
+      <span>Auto rotation</span>
+      <output id="rotationValue">0.6×</output>
+    </label>
+    <input id="rotationSpeed" type="range" min="0" max="2.5" step="0.1" value="0.6">
+  </div>
+
+  <div class="control">
+    <label class="control-label" for="rotationAxis">
+      <span>Rotation axis</span>
+    </label>
+    <select id="rotationAxis">
+      <option value="BOTH">Both X + Y</option>
+      <option value="X">X axis</option>
+      <option value="Y">Y axis</option>
+      <option value="Z">Z axis</option>
+    </select>
+  </div>
+
+  <div class="grid2">
+    <button id="explodeBtn">✦ Explode</button>
+    <button id="reformBtn">◎ Reform</button>
+    <button id="trailsBtn" class="active">〰 Trails: ON</button>
+    <button id="colorBtn" class="active">🌈 Colours: ON</button>
+    <button id="cursorBtn" class="active">☄ Cursor: ON</button>
+    <button id="rotateBtn" class="active">⟳ Rotation: ON</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">
+    <span>HAND TRACKING</span>
+    <span class="pill" id="handPill">OFF</span>
+  </div>
+
+  <button id="cameraBtn" style="width:100%">Enable Hand Tracking</button>
+  <video id="cameraVideo" autoplay playsinline></video>
+  <canvas id="cameraPreview"></canvas>
+  <div class="hint" id="handStatus">
+    Allow camera access to control particles with your hand.
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">
+    <span>AUDIO REACTIVITY</span>
+    <span class="pill" id="audioPill">OFF</span>
+  </div>
+
+  <button id="audioToggle" style="width:100%">Enable Microphone Audio</button>
+
+  <div class="control">
+    <label class="control-label" for="audioSensitivity">
+      <span>Audio sensitivity</span>
+      <output id="audioSensitivityValue">4.0×</output>
+    </label>
+    <input id="audioSensitivity" type="range" min="0.5" max="8" step="0.1" value="4">
+  </div>
+
+  <div class="meter">
+    <div id="audioMeter"></div>
+  </div>
+
+  <div class="hint" id="audioStatus">
+    Enable microphone access to react to external sound. Shape Music plays the song assigned to the selected shape.
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">
+    <span>SHAPE MUSIC</span>
+    <span class="pill" id="musicPill">OFF</span>
+  </div>
+
+  <button id="musicToggle" style="width:100%">♫ Enable Shape Music</button>
+
+  <div class="control">
+    <label class="control-label" for="musicVolume">
+      <span>Music volume</span>
+      <output id="musicVolumeValue">35%</output>
+    </label>
+    <input id="musicVolume" type="range" min="0" max="100" step="1" value="35">
+  </div>
+
+  <div class="hint" id="musicStatus">
+    Enable music to play the selected song for each shape. Instrumental files are loaded from the music folder.
+  </div>
+
+  <div class="meter">
+    <div id="musicMeter"></div>
+  </div>
+
+  <div class="statusline">
+    <span class="dot" id="statusDot"></span>
+    <span id="systemStatus">Initializing particle system...</span>
+  </div>
+
+</div>
+
+<div id="topStatus">
+  PARIVARTAN 2.0 &nbsp;·&nbsp;
+  <span id="particleCount">6500</span> PARTICLES
+</div>
+
+<div id="bottomHint">
+  <strong>Move your cursor</strong> to interact · Use the controls to transform the universe
+</div>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+const $ = id => document.getElementById(id);
+const canvas = $('scene');
+
+const COUNT = 6500;
+const TAU = Math.PI * 2;
+
+let scene, camera, renderer, particleGroup, particles, glow;
+let particleGeometry, glowGeometry, particleMaterial, glowMaterial;
+let positions, colors, targets, baseColors, velocities, randomOffsets;
+
+let currentShape = 'Sphere';
+let shapeIndex = 0;
+const shapeNames = ['Sphere', 'Heart', 'Galaxy', 'Butterfly', 'Spiral', 'Saturn'];
+
+let particleSpeed = 1;
+let particleSize = 1;
+let rotationSpeed = 0.6;
+let rotationEnabled = true;
+let rotationAxis = 'BOTH';
+let colorEnabled = true;
+let trailsEnabled = true;
+let cursorEnabled = true;
+let exploded = false;
+let explosionPower = 0;
+let handScale = 1;
+let time = 0;
+
+let audioLevel = 0;
+let audioSensitivity = 4;
+let audioEnabled = false;
+let audioContext = null;
+let audioAnalyser = null;
+let audioStream = null;
+let audioData = null;
+let audioBassData = null;
+let audioSmoothedBass = 0;
+let audioSmoothedHigh = 0;
+let audioPulse = 0;
+
+// Shape-specific song files. Filenames must match ./songs exactly.
+let musicEnabled = false;
+let musicVolume = 0.35;
+let musicCurrentShape = '';
+let activeSongPlayer = 0;
+let songFadeTimer = null;
+
+const songPlayers = [
+  $('songPlayerA'),
+  $('songPlayerB')
+];
+
+const songTracks = {
+  Saturn: { title: 'Tabla & Sitar', src: './music/tabla.mp3' },
+  Heart: { title: 'Piano', src: './music/piano.mp3' },
+  Butterfly: { title: 'Guitar', src: './music/guitar.mp3' },
+  Sphere: { title: 'Violin', src: './music/violin.mp3' },
+  Galaxy: { title: 'Drums', src: './music/drum-roll.mp3' },
+  Spiral: { title: 'Piano, Violin & Flute', src: './music/flute-strings.mp3' }
+};
+
+let musicLevel = 0;
+let musicPulse = 0;
+let musicContext = null;
+let sfxVolume = 0.7;
+
+let mouseX = 0;
+let mouseY = 0;
+let pointerX = 0;
+let pointerY = 0;
+
+let cursorWorld = new THREE.Vector3();
+let cursorRaycaster = new THREE.Raycaster();
+let cursorPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+let clock = new THREE.Clock();
+
+let handEnabled = false;
+let handLandmarker = null;
+let cameraStream = null;
+let lastVideoTime = -1;
+let handGesture = 'None';
+let lastGesture = '';
+let gestureStart = 0;
+let gestureCooldown = 0;
+let handRotationX = 0;
+let handRotationY = 0;
+
+function randomSphere(radius = 1) {
+  const u = Math.random();
+  const v = Math.random();
+  const theta = TAU * u;
+  const phi = Math.acos(2 * v - 1);
+
+  return [
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  ];
+}
+
+function makeShape(name) {
+  const result = new Float32Array(COUNT * 3);
+
+  for (let i = 0; i < COUNT; i++) {
+    let x = 0;
+    let y = 0;
+    let z = 0;
+
+    if (name === 'Sphere') {
+      [x, y, z] = randomSphere(3 * Math.cbrt(Math.random()));
+    }
+
+    if (name === 'Heart') {
+      const t = Math.random() * TAU;
+      const fill = Math.sqrt(Math.random());
+
+      const hx = 16 * Math.pow(Math.sin(t), 3);
+      const hy =
+        13 * Math.cos(t) -
+        5 * Math.cos(2 * t) -
+        2 * Math.cos(3 * t) -
+        Math.cos(4 * t);
+
+      x = hx * 0.19 * fill;
+      y = hy * 0.19 * fill + 0.15;
+      z = (Math.random() - 0.5) * 1.05 * fill;
+    }
+
+    if (name === 'Galaxy') {
+      const armCount = 5;
+      const arm = Math.floor(Math.random() * armCount);
+      const radius = Math.pow(Math.random(), 0.62) * 3.6;
+      const angle =
+        arm / armCount * TAU +
+        radius * 1.65 +
+        (Math.random() - 0.5) * 0.65;
+
+      x = Math.cos(angle) * radius;
+      z = Math.sin(angle) * radius;
+      y = (Math.random() - 0.5) * 0.45 * (1 + radius * 0.25);
+    }
+
+    if (name === 'Butterfly') {
+      const t = Math.random() * Math.PI * 12;
+      const curve =
+        Math.exp(Math.cos(t)) -
+        2 * Math.cos(4 * t) -
+        Math.pow(Math.sin(t / 12), 5);
+
+      const spread = Math.random() * 0.2 + 0.82;
+
+      x = Math.sin(t) * curve * 0.53 * spread;
+      y = Math.cos(t) * curve * 0.53 * spread;
+      z = (Math.random() - 0.5) * 0.45;
+    }
+
+    if (name === 'Spiral') {
+      // Large 3D spring inspired by Ghoomar's circular spinning movement.
+      const f = Math.random();
+      const angle = f * TAU * 8.5 + (Math.random() - 0.5) * 0.1;
+
+      // Wide radius makes the spring large and clearly visible.
+      const radius = 2.55 + (Math.random() - 0.5) * 0.2;
+
+      x = Math.cos(angle) * radius;
+      y = (f - 0.5) * 7.6;
+      z = Math.sin(angle) * radius;
+
+      // Slight ripple gives the spring a fuller swirling appearance.
+      const ripple = Math.sin(angle * 0.5) * 0.18;
+
+      x += Math.cos(angle + Math.PI / 2) * ripple;
+      z += Math.sin(angle + Math.PI / 2) * ripple;
+    }
+
+    if (name === 'Saturn') {
+      if (Math.random() < 0.62) {
+        [x, y, z] = randomSphere(1.8 * Math.cbrt(Math.random()));
+      } else {
+        const angle = Math.random() * TAU;
+        const radius = 2.35 + Math.random() * 1.35;
+
+        x = Math.cos(angle) * radius;
+        z = Math.sin(angle) * radius;
+        y = (Math.random() - 0.5) * 0.12;
+
+        const oldY = y;
+        y = oldY * 0.92 + z * 0.3;
+        z = z * 0.92 - oldY * 0.3;
+      }
+    }
+
+    const k = i * 3;
+    result[k] = x;
+    result[k + 1] = y;
+    result[k + 2] = z;
+  }
+
+  return result;
+}
+
+function makeBaseColors() {
+  const arr = new Float32Array(COUNT * 3);
+
+  for (let i = 0; i < COUNT; i++) {
+    const k = i * 3;
+
+    const c = new THREE.Color().setHSL(
+      0.53 + Math.random() * 0.3,
+      0.82,
+      0.58 + Math.random() * 0.25
+    );
+
+    arr[k] = c.r;
+    arr[k + 1] = c.g;
+    arr[k + 2] = c.b;
+  }
+
+  return arr;
+}
+
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color('#05060d');
+  scene.fog = new THREE.FogExp2('#05060d', 0.025);
+
+  camera = new THREE.PerspectiveCamera(
+    55,
+    innerWidth / innerHeight,
+    0.1,
+    150
+  );
+
+  camera.position.set(0, 0, 12);
+
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: false,
+    powerPreference: 'high-performance'
+  });
+
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  particleGroup = new THREE.Group();
+  scene.add(particleGroup);
+
+  positions = new Float32Array(COUNT * 3);
+  targets = makeShape('Sphere');
+  baseColors = makeBaseColors();
+  colors = new Float32Array(COUNT * 3);
+  velocities = new Float32Array(COUNT * 3);
+  randomOffsets = new Float32Array(COUNT);
+
+  for (let i = 0; i < COUNT; i++) {
+    const k = i * 3;
+
+    positions[k] = targets[k] + (Math.random() - 0.5) * 0.15;
+    positions[k + 1] = targets[k + 1] + (Math.random() - 0.5) * 0.15;
+    positions[k + 2] = targets[k + 2] + (Math.random() - 0.5) * 0.15;
+
+    randomOffsets[i] = Math.random() * TAU;
+
+    colors[k] = baseColors[k];
+    colors[k + 1] = baseColors[k + 1];
+    colors[k + 2] = baseColors[k + 2];
+  }
+
+  particleGeometry = new THREE.BufferGeometry();
+  particleGeometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(positions, 3)
+  );
+  particleGeometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(colors, 3)
+  );
+
+  particleMaterial = new THREE.PointsMaterial({
+    size: 0.065,
+    map: createParticleTexture(),
+    transparent: true,
+    opacity: 0.95,
+    vertexColors: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true
+  });
+
+  particles = new THREE.Points(particleGeometry, particleMaterial);
+  particleGroup.add(particles);
+
+  glowGeometry = new THREE.BufferGeometry();
+  glowGeometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(positions, 3)
+  );
+  glowGeometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(colors, 3)
+  );
+
+  glowMaterial = new THREE.PointsMaterial({
+    size: 0.19,
+    map: createParticleTexture(),
+    transparent: true,
+    opacity: 0.19,
+    vertexColors: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true
+  });
+
+  glow = new THREE.Points(glowGeometry, glowMaterial);
+  particleGroup.add(glow);
+
+  // Background stars.
+  const starPositions = new Float32Array(1600 * 3);
+
+  for (let i = 0; i < 1600; i++) {
+    const k = i * 3;
+    const p = randomSphere(35 + Math.random() * 35);
+
+    starPositions[k] = p[0];
+    starPositions[k + 1] = p[1];
+    starPositions[k + 2] = p[2];
+  }
+
+  const starGeo = new THREE.BufferGeometry();
+
+  starGeo.setAttribute(
+    'position',
+    new THREE.BufferAttribute(starPositions, 3)
+  );
+
+  const starMat = new THREE.PointsMaterial({
+    color: 0x7181b9,
+    size: 0.025,
+    transparent: true,
+    opacity: 0.55,
+    depthWrite: false
+  });
+
+  scene.add(new THREE.Points(starGeo, starMat));
+
+  $('systemStatus').textContent = 'Particle system ready';
+  $('statusDot').classList.add('live');
+
+  addControls();
+
+  window.addEventListener('resize', onResize);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerdown', onPointerDown);
+
+  animate();
+}
+
+function createParticleTexture() {
+  const c = document.createElement('canvas');
+  c.width = 64;
+  c.height = 64;
+
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.18, 'rgba(255,255,255,.9)');
+  g.addColorStop(0.45, 'rgba(255,255,255,.28)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+
+  return tex;
+}
+
+function setShape(name) {
+  currentShape = name;
+  shapeIndex = shapeNames.indexOf(name);
+  targets = makeShape(name);
+
+  exploded = false;
+  explosionPower = 0;
+  handScale = 1;
+
+  document.querySelectorAll('[data-shape]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.shape === name);
+  });
+
+  $('shapePill').textContent = name.toUpperCase();
+
+  if (musicEnabled) {
+    switchShapeMusic(name);
+  }
+}
+
+function triggerExplosion() {
+  playSfx('explode');
+
+  exploded = true;
+  explosionPower = 1;
+
+  for (let i = 0; i < COUNT; i++) {
+    const k = i * 3;
+
+    const dx = positions[k];
+    const dy = positions[k + 1];
+    const dz = positions[k + 2];
+
+    const len = Math.hypot(dx, dy, dz) || 1;
+    const spread = 1.5 + Math.random() * 4.5;
+
+    velocities[k] = dx / len * spread + (Math.random() - 0.5) * 2;
+    velocities[k + 1] = dy / len * spread + (Math.random() - 0.5) * 2;
+    velocities[k + 2] = dz / len * spread + (Math.random() - 0.5) * 2;
+  }
+}
+
+function reformParticles() {
+  if (exploded) playSfx('reform');
+
+  exploded = false;
+  explosionPower = 0;
+}
+
+function nextShape() {
+  shapeIndex = (shapeIndex + 1) % shapeNames.length;
+  setShape(shapeNames[shapeIndex]);
+}
+
+function addControls() {
+  const panel = $('controlPanel');
+  const panelToggle = $('panelToggle');
+
+  panelToggle.addEventListener('click', () => {
+    const willOpen = panel.classList.contains('is-hidden');
+    panel.classList.toggle('is-hidden', !willOpen);
+    panelToggle.setAttribute('aria-expanded', String(willOpen));
+    panelToggle.setAttribute('aria-label', willOpen ? 'Close controls panel' : 'Open controls panel');
+    panelToggle.title = willOpen ? 'Close controls' : 'Open controls';
+    panelToggle.textContent = willOpen ? '×' : '☰';
+  });
+
+  document.querySelectorAll('[data-shape]').forEach(btn => {
+    btn.addEventListener('click', () => setShape(btn.dataset.shape));
+  });
+
+  $('speed').addEventListener('input', e => {
+    particleSpeed = Number(e.target.value);
+    $('speedValue').textContent = particleSpeed.toFixed(1) + '×';
+  });
+
+  $('particleSize').addEventListener('input', e => {
+    particleSize = Number(e.target.value);
+    $('sizeValue').textContent = particleSize.toFixed(1) + '×';
+  });
+
+  $('rotationSpeed').addEventListener('input', e => {
+    rotationSpeed = Number(e.target.value);
+    $('rotationValue').textContent = rotationSpeed.toFixed(1) + '×';
+  });
+
+  $('rotationAxis').addEventListener('change', e => {
+    rotationAxis = e.target.value;
+  });
+
+  $('explodeBtn').addEventListener('click', triggerExplosion);
+  $('reformBtn').addEventListener('click', reformParticles);
+
+  $('trailsBtn').addEventListener('click', () => {
+    trailsEnabled = !trailsEnabled;
+
+    $('trailsBtn').classList.toggle('active', trailsEnabled);
+    $('trailsBtn').textContent = trailsEnabled
+      ? '〰 Trails: ON'
+      : '〰 Trails: OFF';
+
+    renderer.autoClear = !trailsEnabled;
+
+    if (!trailsEnabled) {
+      renderer.setClearColor('#05060d', 1);
+    }
+  });
+
+  $('colorBtn').addEventListener('click', () => {
+    colorEnabled = !colorEnabled;
+
+    $('colorBtn').classList.toggle('active', colorEnabled);
+    $('colorBtn').textContent = colorEnabled
+      ? '🌈 Colours: ON'
+      : '🌈 Colours: OFF';
+  });
+
+  $('cursorBtn').addEventListener('click', () => {
+    cursorEnabled = !cursorEnabled;
+
+    $('cursorBtn').classList.toggle('active', cursorEnabled);
+    $('cursorBtn').textContent = cursorEnabled
+      ? '☄ Cursor: ON'
+      : '☄ Cursor: OFF';
+  });
+
+  $('rotateBtn').addEventListener('click', () => {
+    rotationEnabled = !rotationEnabled;
+
+    $('rotateBtn').classList.toggle('active', rotationEnabled);
+    $('rotateBtn').textContent = rotationEnabled
+      ? '⟳ Rotation: ON'
+      : '⟳ Rotation: OFF';
+  });
+
+  $('audioSensitivity').addEventListener('input', e => {
+    audioSensitivity = Number(e.target.value);
+    $('audioSensitivityValue').textContent =
+      audioSensitivity.toFixed(1) + '×';
+  });
+
+  $('audioToggle').addEventListener('click', toggleAudio);
+  $('musicToggle').addEventListener('click', toggleShapeMusic);
+
+  $('musicVolume').addEventListener('input', e => {
+    musicVolume = Number(e.target.value) / 100;
+    $('musicVolumeValue').textContent = e.target.value + '%';
+
+    songPlayers.forEach(player => {
+      if (!player.paused) player.volume = musicVolume;
+    });
+  });
+
+  $('cameraBtn').addEventListener('click', toggleCamera);
+}
+
+function onPointerMove(e) {
+  pointerX = (e.clientX / innerWidth) * 2 - 1;
+  pointerY = -(e.clientY / innerHeight) * 2 + 1;
+
+  mouseX = pointerX;
+  mouseY = pointerY;
+}
+
+function onPointerDown(e) {
+  if (e.target === canvas && !handEnabled) {
+    triggerExplosion();
+  }
+}
+
+function onResize() {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+}
+
+function updateMusicUI(message) {
+  $('musicToggle').textContent = musicEnabled
+    ? '♫ Disable Shape Music'
+    : '♫ Enable Shape Music';
+
+  $('musicPill').textContent = musicEnabled ? 'LIVE' : 'OFF';
+  $('musicPill').classList.toggle('on', musicEnabled);
+
+  if (message) {
+    $('musicStatus').textContent = message;
+  }
+}
+
+function clearSongFade() {
+  if (songFadeTimer !== null) {
+    clearInterval(songFadeTimer);
+    songFadeTimer = null;
+  }
+}
+
+async function switchShapeMusic(name) {
+  if (!musicEnabled) return;
+
+  const track = songTracks[name];
+  if (!track) return;
+
+  const oldPlayer = songPlayers[activeSongPlayer];
+  const nextIndex = 1 - activeSongPlayer;
+  const nextPlayer = songPlayers[nextIndex];
+
+  clearSongFade();
+
+  try {
+    nextPlayer.pause();
+    nextPlayer.currentTime = 0;
+    nextPlayer.src = track.src;
+    nextPlayer.volume = 0;
+    nextPlayer.loop = true;
+    nextPlayer.load();
+
+    await nextPlayer.play();
+
+    const startedAt = performance.now();
+    const duration = 650;
+
+    songFadeTimer = setInterval(() => {
+      const progress = Math.min(
+        1,
+        (performance.now() - startedAt) / duration
+      );
+
+      nextPlayer.volume = Math.max(
+        0,
+        Math.min(1, musicVolume * progress)
+      );
+
+      oldPlayer.volume = Math.max(
+        0,
+        Math.min(1, oldPlayer.volume * (1 - progress))
+      );
+
+      if (progress >= 1) {
+        clearSongFade();
+        oldPlayer.pause();
+        oldPlayer.volume = 0;
+      }
+    }, 25);
+
+    activeSongPlayer = nextIndex;
+    musicCurrentShape = name;
+
+    $('musicStatus').textContent =
+      name + ' · Now playing: ' + track.title;
+
+  } catch (err) {
+    console.error('Song playback error:', err);
+
+    $('musicStatus').textContent =
+      'Could not play ' + track.title +
+      '. Check filename and browser audio permission.';
+  }
+}
+
+async function toggleShapeMusic() {
+  if (musicEnabled) {
+    musicEnabled = false;
+    clearSongFade();
+
+    songPlayers.forEach(player => {
+      player.pause();
+      player.volume = 0;
+    });
+
+    musicLevel = 0;
+    musicPulse = 0;
+    $('musicMeter').style.width = '0%';
+
+    updateMusicUI('Shape music is off.');
+    return;
+  }
+
+  musicEnabled = true;
+
+  songPlayers.forEach(player => {
+    player.volume = 0;
+    player.loop = true;
+  });
+
+  updateMusicUI('Loading the song for ' + currentShape + '...');
+  await switchShapeMusic(currentShape);
+}
+
+function playSfx(kind) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+
+    if (!musicContext || musicContext.state === 'closed') {
+      musicContext = new AudioCtx();
+    }
+
+    const ctx = musicContext;
+
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const now = ctx.currentTime;
+    const master = ctx.createGain();
+
+    master.gain.value = sfxVolume;
+    master.connect(ctx.destination);
+
+    if (kind === 'explode') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(115, now);
+      osc.frequency.exponentialRampToValueAtTime(28, now + 0.48);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.65, now + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+
+      osc.connect(gain);
+      gain.connect(master);
+
+      osc.start(now);
+      osc.stop(now + 0.58);
+
+      const buffer = ctx.createBuffer(
+        1,
+        Math.floor(ctx.sampleRate * 0.32),
+        ctx.sampleRate
+      );
+
+      const data = buffer.getChannelData(0);
+
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(900, now);
+      filter.frequency.exponentialRampToValueAtTime(90, now + 0.3);
+
+      const ng = ctx.createGain();
+
+      ng.gain.setValueAtTime(0.0001, now);
+      ng.gain.exponentialRampToValueAtTime(0.34, now + 0.015);
+      ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+
+      noise.connect(filter);
+      filter.connect(ng);
+      ng.connect(master);
+
+      noise.start(now);
+      noise.stop(now + 0.34);
+
+    } else {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(720, now + 0.38);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.25, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+
+      osc.connect(gain);
+      gain.connect(master);
+
+      osc.start(now);
+      osc.stop(now + 0.68);
+
+      const ping = ctx.createOscillator();
+      const pg = ctx.createGain();
+
+      ping.type = 'triangle';
+      ping.frequency.setValueAtTime(660, now + 0.2);
+      ping.frequency.exponentialRampToValueAtTime(1320, now + 0.58);
+
+      pg.gain.setValueAtTime(0.0001, now);
+      pg.gain.exponentialRampToValueAtTime(0.12, now + 0.25);
+      pg.gain.exponentialRampToValueAtTime(0.0001, now + 0.72);
+
+      ping.connect(pg);
+      pg.connect(master);
+
+      ping.start(now);
+      ping.stop(now + 0.75);
+    }
+
+    setTimeout(() => {
+      try {
+        master.disconnect();
+      } catch (e) {}
+    }, 1100);
+
+  } catch (err) {
+    console.warn('SFX unavailable:', err);
+  }
+}
+
+async function toggleAudio() {
+  if (audioEnabled) {
+    audioEnabled = false;
+
+    if (audioStream) {
+      audioStream.getTracks().forEach(track => track.stop());
+    }
+
+    audioStream = null;
+
+    if (audioContext) {
+      try {
+        await audioContext.close();
+      } catch (e) {}
+    }
+
+    audioContext = null;
+    audioAnalyser = null;
+    audioData = null;
+    audioBassData = null;
+
+    $('audioToggle').textContent = 'Enable Microphone Audio';
+    $('audioPill').textContent = 'OFF';
+    $('audioPill').classList.remove('on');
+    $('audioStatus').textContent = 'Microphone is off.';
+
+    return;
+  }
+
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error('Microphone access requires HTTPS or localhost.');
+    }
+
+    audioStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false
+      },
+      video: false
+    });
+
+    audioContext = new (
+      window.AudioContext || window.webkitAudioContext
+    )();
+
+    await audioContext.resume();
+
+    const source = audioContext.createMediaStreamSource(audioStream);
+
+    audioAnalyser = audioContext.createAnalyser();
+    audioAnalyser.fftSize = 2048;
+    audioAnalyser.smoothingTimeConstant = 0.55;
+    audioAnalyser.minDecibels = -90;
+    audioAnalyser.maxDecibels = -10;
+
+    source.connect(audioAnalyser);
+
+    audioData = new Uint8Array(audioAnalyser.frequencyBinCount);
+    audioBassData = new Uint8Array(audioAnalyser.frequencyBinCount);
+
+    audioEnabled = true;
+
+    $('audioToggle').textContent = 'Disable Microphone Audio';
+    $('audioPill').textContent = 'LIVE';
+    $('audioPill').classList.add('on');
+
+    $('audioStatus').textContent =
+      'Listening. Play music or make sound to see the particles react.';
+
+  } catch (err) {
+    console.error('Audio setup error:', err);
+
+    $('audioStatus').textContent =
+      'Microphone error: ' +
+      (err.message || 'Permission denied') +
+      '. Check browser permissions.';
+
+    if (audioStream) {
+      audioStream.getTracks().forEach(track => track.stop());
+    }
+
+    audioStream = null;
+  }
+}
+
+function updateAudio(dt) {
+  if (!audioEnabled || !audioAnalyser || !audioData) {
+    audioLevel *= Math.max(0, 1 - dt * 2.5);
+    audioPulse *= Math.max(0, 1 - dt * 4);
+
+    $('audioMeter').style.width =
+      Math.round(audioLevel * 100) + '%';
+
+    return;
+  }
+
+  audioAnalyser.getByteFrequencyData(audioData);
+
+  let total = 0;
+  let bassSum = 0;
+  let midSum = 0;
+  let highSum = 0;
+  let peak = 0;
+
+  const count = audioData.length;
+  const bassEnd = Math.max(2, Math.floor(count * 0.07));
+  const midEnd = Math.max(bassEnd + 1, Math.floor(count * 0.35));
+
+  for (let i = 0; i < count; i++) {
+    const v = audioData[i] / 255;
+
+    total += v;
+
+    if (i < bassEnd) {
+      bassSum += v;
+    } else if (i < midEnd) {
+      midSum += v;
+    } else {
+      highSum += v;
+    }
+
+    if (v > peak) peak = v;
+  }
+
+  const average = total / count;
+  const bass = bassSum / bassEnd;
+  const mid = midSum / Math.max(1, midEnd - bassEnd);
+  const high = highSum / Math.max(1, count - midEnd);
+
+  const raw = Math.min(
+    1,
+    (average * 1.3 + bass * 3.8 + mid * 1.2 + peak * 0.2) *
+    audioSensitivity
+  );
+
+  audioLevel +=
+    (raw - audioLevel) *
+    Math.min(1, dt * (raw > audioLevel ? 18 : 5));
+
+  audioSmoothedBass +=
+    (bass - audioSmoothedBass) * Math.min(1, dt * 15);
+
+  audioSmoothedHigh +=
+    (high - audioSmoothedHigh) * Math.min(1, dt * 10);
+
+  const beatSignal = Math.min(
+    1,
+    (audioSmoothedBass * 5.5 + audioSmoothedHigh * 1.5) *
+    audioSensitivity
+  );
+
+  audioPulse +=
+    (beatSignal - audioPulse) *
+    Math.min(1, dt * (beatSignal > audioPulse ? 24 : 7));
+
+  $('audioMeter').style.width =
+    Math.round(Math.min(1, audioLevel) * 100) + '%';
+
+  $('audioStatus').textContent = audioLevel > 0.08
+    ? 'Sound detected — particles reacting to your audio.'
+    : 'Listening for music or sound...';
+}
+
+async function toggleCamera() {
+  if (handEnabled) {
+    handEnabled = false;
+
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+    }
+
+    cameraStream = null;
+    $('cameraVideo').srcObject = null;
+    $('cameraPreview').style.display = 'none';
+
+    $('cameraBtn').textContent = 'Enable Hand Tracking';
+    $('handPill').textContent = 'OFF';
+    $('handPill').classList.remove('on');
+    $('handStatus').textContent = 'Hand tracking is off.';
+
+    return;
+  }
+
+  try {
+    $('cameraBtn').disabled = true;
+    $('handStatus').textContent = 'Loading hand tracking model...';
+
+    const vision = await import(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/vision_bundle.mjs'
+    );
+
+    const files = await vision.FilesetResolver.forVisionTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/wasm'
+    );
+
+    handLandmarker = await vision.HandLandmarker.createFromOptions(
+      files,
+      {
+        baseOptions: {
+          modelAssetPath:
+            'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+          delegate: 'GPU'
+        },
+        runningMode: 'VIDEO',
+        numHands: 1
+      }
+    );
+
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user',
+        width: 640,
+        height: 480
+      },
+      audio: false
+    });
+
+    const video = $('cameraVideo');
+    video.srcObject = cameraStream;
+
+    await video.play();
+
+    handEnabled = true;
+
+    $('cameraPreview').style.display = 'block';
+    $('cameraBtn').textContent = 'Disable Hand Tracking';
+    $('handPill').textContent = 'LIVE';
+    $('handPill').classList.add('on');
+    $('handStatus').textContent = 'Show your hand to the camera.';
+
+    requestAnimationFrame(processHandFrame);
+
+  } catch (err) {
+    console.error('Camera/hand tracking error:', err);
+
+    $('handStatus').textContent =
+      'Could not start hand tracking: ' +
+      (err.message || 'Check camera permission.');
+
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+    }
+
+    cameraStream = null;
+    handEnabled = false;
+
+  } finally {
+    $('cameraBtn').disabled = false;
+  }
+}
+
+function distance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+function processHandFrame() {
+  if (!handEnabled || !handLandmarker) return;
+
+  const video = $('cameraVideo');
+  const preview = $('cameraPreview');
+  const ctx = preview.getContext('2d');
+
+  if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+
+    try {
+      const result = handLandmarker.detectForVideo(
+        video,
+        performance.now()
+      );
+
+      preview.width = video.videoWidth || 640;
+      preview.height = video.videoHeight || 480;
+
+      ctx.clearRect(0, 0, preview.width, preview.height);
+      ctx.drawImage(video, 0, 0, preview.width, preview.height);
+
+      if (result.landmarks && result.landmarks.length) {
+        const lm = result.landmarks[0];
+
+        drawHand(lm, ctx, preview.width, preview.height);
+        interpretHand(lm);
+
+      } else {
+        handGesture = 'None';
+        $('handStatus').textContent =
+          'No hand detected — place your hand in view.';
+      }
+
+    } catch (err) {
+      console.warn('Hand detection frame error:', err);
+    }
+  }
+
+  requestAnimationFrame(processHandFrame);
+}
+
+function drawHand(lm, ctx, w, h) {
+  const connections = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],
+    [0,17]
+  ];
+
+  ctx.strokeStyle = '#63e8ff';
+  ctx.lineWidth = 2;
+
+  for (const [a, b] of connections) {
+    ctx.beginPath();
+    ctx.moveTo(lm[a].x * w, lm[a].y * h);
+    ctx.lineTo(lm[b].x * w, lm[b].y * h);
+    ctx.stroke();
+  }
+
+  for (const p of lm) {
+    ctx.beginPath();
+    ctx.arc(p.x * w, p.y * h, 3, 0, TAU);
+    ctx.fillStyle = '#d7a5ff';
+    ctx.fill();
+  }
+}
+
+function interpretHand(lm) {
+  const now = performance.now();
+
+  const thumbTip = lm[4];
+  const indexTip = lm[8];
+
+  const indexUp = lm[8].y < lm[6].y;
+  const middleUp = lm[12].y < lm[10].y;
+  const ringUp = lm[16].y < lm[14].y;
+  const pinkyUp = lm[20].y < lm[18].y;
+
+  const thumbIndex = distance(thumbTip, indexTip);
+  const palmWidth = distance(lm[5], lm[17]) || 0.1;
+  const pinchRatio = thumbIndex / palmWidth;
+
+  let gesture = 'None';
+
+  if (pinchRatio < 0.14) {
+    gesture = 'Pinch';
+  } else if (indexUp && middleUp && !ringUp && !pinkyUp) {
+    gesture = 'Two Fingers';
+  } else if (indexUp && middleUp && ringUp && pinkyUp) {
+    gesture = 'Open Palm';
+  } else if (!indexUp && !middleUp && !ringUp && !pinkyUp) {
+    gesture = 'Fist';
+  }
+
+  const centerX =
+    (lm[0].x + lm[5].x + lm[9].x + lm[17].x) / 4;
+
+  const centerY =
+    (lm[0].y + lm[5].y + lm[9].y + lm[17].y) / 4;
+
+  handRotationY = (0.5 - centerX) * 1.6;
+  handRotationX = (0.5 - centerY) * 1.1;
+
+  const palmSize = distance(lm[0], lm[9]);
+
+  handScale = THREE.MathUtils.clamp(
+    0.7 + palmSize * 1.5,
+    0.7,
+    1.65
+  );
+
+  if (gesture !== lastGesture) {
+    lastGesture = gesture;
+    gestureStart = now;
+  }
+
+  const stable = now - gestureStart > 550;
+
+  if (
+    stable &&
+    now > gestureCooldown &&
+    gesture !== handGesture
+  ) {
+    handGesture = gesture;
+
+    if (gesture === 'Open Palm') triggerExplosion();
+    if (gesture === 'Fist') reformParticles();
+    if (gesture === 'Two Fingers') nextShape();
+    if (gesture === 'Pinch') setShape('Heart');
+
+    if (gesture !== 'None') {
+      gestureCooldown = now + 1200;
+    }
+  }
+
+  $('handStatus').textContent =
+    'Gesture: ' + gesture +
+    ' · Move your hand to rotate; pinch for Heart.';
+}
+
+function updateCursorForce(dt) {
+  if (!cursorEnabled) return;
+
+  cursorRaycaster.setFromCamera(
+    new THREE.Vector2(mouseX, mouseY),
+    camera
+  );
+
+  cursorRaycaster.ray.intersectPlane(cursorPlane, cursorWorld);
+
+  const forceRadius = 2.2;
+  const force = cursorWorld;
+  const forceStrength = 2.5 * particleSpeed;
+
+  if (exploded) return;
+
+  for (let i = 0; i < COUNT; i++) {
+    const k = i * 3;
+
+    const dx = positions[k] - force.x;
+    const dy = positions[k + 1] - force.y;
+    const dz = positions[k + 2] - force.z;
+
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (d < forceRadius && d > 0.001) {
+      const f = (1 - d / forceRadius) * forceStrength * dt;
+
+      positions[k] += dx / d * f;
+      positions[k + 1] += dy / d * f;
+      positions[k + 2] += dz / d * f;
+    }
+  }
+}
+
+function updateParticles(dt) {
+  const ease = Math.min(1, dt * (2.2 + particleSpeed * 2.6));
+
+  const pulse = Math.max(
+    audioEnabled ? audioLevel : 0,
+    musicEnabled ? musicLevel * 0.25 + musicPulse * 0.45 : 0
+  );
+
+  const beat = Math.max(
+    audioEnabled ? audioPulse : 0,
+    musicEnabled ? musicPulse : 0
+  );
+
+  const audioScale = 1 + pulse * 0.85 + beat * 0.55;
+  const globalBreath = 1 + Math.sin(time * 1.2) * 0.025;
+  const scale = handEnabled ? handScale : 1;
+
+  for (let i = 0; i < COUNT; i++) {
+    const k = i * 3;
+
+    if (exploded) {
+      positions[k] += velocities[k] * dt * particleSpeed;
+      positions[k + 1] += velocities[k + 1] * dt * particleSpeed;
+      positions[k + 2] += velocities[k + 2] * dt * particleSpeed;
+
+      velocities[k] *= 0.987;
+      velocities[k + 1] *= 0.987;
+      velocities[k + 2] *= 0.987;
+
+      const x = positions[k];
+      const z = positions[k + 2];
+
+      const swirl = dt * (0.25 + audioPulse * 0.8);
+
+      positions[k] += z * swirl * 0.25;
+      positions[k + 2] -= x * swirl * 0.25;
+
+      if (explosionPower > 0) {
+        const pull = Math.min(1, dt * 0.15);
+
+        velocities[k] +=
+          (targets[k] - positions[k]) * 0.02 * pull;
+
+        velocities[k + 1] +=
+          (targets[k + 1] - positions[k + 1]) * 0.02 * pull;
+
+        velocities[k + 2] +=
+          (targets[k + 2] - positions[k + 2]) * 0.02 * pull;
+      }
+
+    } else {
+      const breathing =
+        globalBreath +
+        Math.sin(time * 3 + randomOffsets[i]) * 0.012;
+
+      let targetX = targets[k] * scale * audioScale * breathing;
+      let targetY = targets[k + 1] * scale * audioScale * breathing;
+      let targetZ = targets[k + 2] * scale * audioScale * breathing;
+
+      if (currentShape === 'Spiral') {
+        // Spring compression and circular sway inspired by Ghoomar spins.
+        const springPulse =
+          1 +
+          Math.sin(time * 2.2 + randomOffsets[i]) * 0.035 +
+          musicPulse * 0.06;
+
+        const sway = Math.sin(time * 1.15) * 0.16;
+
+        targetX =
+          targetX * springPulse +
+          Math.cos(time * 1.4 + targets[k + 1] * 0.45) * sway;
+
+        targetZ =
+          targetZ * springPulse +
+          Math.sin(time * 1.4 + targets[k + 1] * 0.45) * sway;
+      }
+
+      positions[k] += (targetX - positions[k]) * ease;
+      positions[k + 1] += (targetY - positions[k + 1]) * ease;
+      positions[k + 2] += (targetZ - positions[k + 2]) * ease;
+    }
+
+    if (colorEnabled) {
+      const hue = (
+        0.54 +
+        i / COUNT * 0.28 +
+        time * 0.035 +
+        audioLevel * 0.2 +
+        audioPulse * 0.08
+      ) % 1;
+
+      const saturation = 0.72 + Math.min(0.25, audioLevel * 0.25);
+
+      const lightness = THREE.MathUtils.clamp(
+        0.48 + audioLevel * 0.2 + audioPulse * 0.12,
+        0.35,
+        0.95
+      );
+
+      const c = new THREE.Color().setHSL(
+        hue,
+        saturation,
+        lightness
+      );
+
+      colors[k] = c.r;
+      colors[k + 1] = c.g;
+      colors[k + 2] = c.b;
+
+    } else {
+      colors[k] = baseColors[k];
+      colors[k + 1] = baseColors[k + 1];
+      colors[k + 2] = baseColors[k + 2];
+    }
+  }
+
+  particleGeometry.attributes.position.needsUpdate = true;
+  particleGeometry.attributes.color.needsUpdate = true;
+  glowGeometry.attributes.position.needsUpdate = true;
+  glowGeometry.attributes.color.needsUpdate = true;
+
+  particleMaterial.size =
+    0.065 * particleSize * (1 + pulse * 2.5 + beat * 1.6);
+
+  glowMaterial.size =
+    0.19 * particleSize * (1 + pulse * 4 + beat * 2.8);
+
+  particleMaterial.opacity =
+    THREE.MathUtils.clamp(0.78 + pulse * 0.22, 0, 1);
+
+  glowMaterial.opacity =
+    THREE.MathUtils.clamp(
+      0.19 + pulse * 0.65 + beat * 0.35,
+      0.1,
+      1
+    );
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const dt = Math.min(clock.getDelta(), 0.05);
+  time += dt;
+
+  updateAudio(dt);
+
+  if (musicEnabled) {
+    const activePlayer = songPlayers[activeSongPlayer];
+
+    musicLevel =
+      activePlayer && !activePlayer.paused ? 0.35 : 0;
+
+    musicPulse =
+      activePlayer && !activePlayer.paused
+        ? 0.12 + Math.abs(Math.sin(time * 5)) * 0.18
+        : 0;
+
+    $('musicMeter').style.width =
+      Math.round(Math.min(1, musicLevel + musicPulse) * 100) + '%';
+
+  } else {
+    musicLevel *= Math.max(0, 1 - dt * 3);
+    musicPulse *= Math.max(0, 1 - dt * 4);
+  }
+
+  updateParticles(dt);
+
+  if (rotationEnabled) {
+    const rot = dt * rotationSpeed;
+
+    if (rotationAxis === 'X' || rotationAxis === 'BOTH') {
+      particleGroup.rotation.x += rot * 0.45;
+    }
+
+    if (rotationAxis === 'Y' || rotationAxis === 'BOTH') {
+      particleGroup.rotation.y += rot;
+    }
+
+    if (rotationAxis === 'Z') {
+      particleGroup.rotation.z += rot;
+    }
+  }
+
+  if (handEnabled) {
+    particleGroup.rotation.y +=
+      (handRotationY - particleGroup.rotation.y) *
+      Math.min(1, dt * 2);
+
+    particleGroup.rotation.x +=
+      (handRotationX - particleGroup.rotation.x) *
+      Math.min(1, dt * 2);
+  }
+
+  // Lightweight particle-trail persistence.
+  if (trailsEnabled) {
+    renderer.autoClear = false;
+    renderer.setClearColor('#05060d', 0.20);
+    renderer.clearDepth();
+    renderer.render(scene, camera);
+
+  } else {
+    renderer.autoClear = true;
+    renderer.setClearColor('#05060d', 1);
+    renderer.render(scene, camera);
+  }
+}
+
+window.addEventListener('beforeunload', () => {
+  clearSongFade();
+
+  try {
+    audioStream?.getTracks().forEach(t => t.stop());
+  } catch (e) {}
+
+  try {
+    cameraStream?.getTracks().forEach(t => t.stop());
+  } catch (e) {}
+
+  try {
+    songPlayers.forEach(player => player.pause());
+  } catch (e) {}
+
+  try {
+    musicContext?.close();
+  } catch (e) {}
+
+  try {
+    audioContext?.close();
+  } catch (e) {}
+});
+
+init();
+</script>
+
+</body>
+</html>
